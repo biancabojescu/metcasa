@@ -1,11 +1,12 @@
 <template>
   <div class="flex min-h-screen w-screen flex-col">
     <Header />
-    <div class="flex w-full overflow-auto">
-      <main class="flex-1 pr-6 pl-3">
+    <div class="flex w-full flex-1 overflow-auto">
+      <main class="flex-1">
         <slot />
       </main>
     </div>
+    <Footer />
   </div>
 </template>
 
