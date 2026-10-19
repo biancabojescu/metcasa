@@ -1,9 +1,10 @@
-import { useAuthStore } from "~/stores/auth"
-import { useFavoritesStore } from "~/stores/favorites"
-
 export default defineNuxtPlugin(() => {
+  if (!import.meta.client) return
+
   const auth = useAuthStore()
-  const favorites = useFavoritesStore()
-  auth.hydrate()
-  favorites.hydrate()
+  useFavoritesStore()
+
+  auth.hydrate().catch(() => {
+    /* erorile sunt deja tratate intern in hydrate */
+  })
 })

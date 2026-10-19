@@ -25,6 +25,8 @@
 html,
 body {
   height: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 html {
@@ -54,10 +56,19 @@ html {
   }
 
   input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active,
   textarea:-webkit-autofill,
-  select:-webkit-autofill {
-    box-shadow: 0 0 0px 1000px transparent inset !important;
-    -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-purple-900) !important;
+    -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+    box-shadow: 0 0 0px 1000px #ffffff inset !important;
+    caret-color: var(--color-purple-900);
     transition: background-color 9999s ease-in-out 0s;
   }
 }

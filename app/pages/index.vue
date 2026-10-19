@@ -23,8 +23,8 @@
           </h1>
           <p class="mt-6 max-w-xl text-lg text-white/80 md:text-xl">
             La metCasa transformam cautarea de locuinta intr-o experienta
-            simpla. Apartamente, case si terenuri verificate, cu agenti care iti
-            raspund cand ai nevoie.
+            simpla. Apartamente, case si terenuri verificate, cu un agent care
+            iti raspunde cand ai nevoie.
           </p>
 
           <div class="mt-10 flex flex-wrap gap-4">
@@ -40,19 +40,17 @@
             </a>
           </div>
 
-          <div class="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-white/15 pt-8">
-            <div>
-              <div class="text-3xl font-bold text-white">500+</div>
-              <div class="mt-1 text-sm text-white/70">Proprietati listate</div>
-            </div>
-            <div>
-              <div class="text-3xl font-bold text-white">1.200</div>
-              <div class="mt-1 text-sm text-white/70">Clienti multumiti</div>
-            </div>
-            <div>
-              <div class="text-3xl font-bold text-white">15 ani</div>
-              <div class="mt-1 text-sm text-white/70">Experienta in piata</div>
-            </div>
+          <div class="mt-14 max-w-2xl border-t border-white/15 pt-8">
+            <p class="text-base font-medium text-white/80 md:text-lg">
+              <span class="text-white">Mediere</span>
+              <span class="mx-3 text-white/40">&middot;</span>
+              <span class="text-white">Evaluare</span>
+              <span class="mx-3 text-white/40">&middot;</span>
+              <span class="text-white">Tranzactii</span>
+            </p>
+            <p class="mt-2 text-sm text-white/60">
+              imobiliare in Iasi
+            </p>
           </div>
         </div>
       </div>
@@ -66,17 +64,18 @@
             Despre metCasa
           </span>
           <h2 class="mt-3 text-4xl font-bold text-purple-900 md:text-5xl">
-            Imobiliare facute corect, cu oameni reali.
+            Mediere, Evaluare, Tranzactii imobiliare.
           </h2>
           <p class="mt-6 text-lg leading-relaxed text-purple-800/80">
-            Suntem o agentie imobiliara fondata pe ideea ca o casa nu se vinde
-            doar cu o poza si un pret. Ascultam ce iti doresti, verificam fiecare
-            anunt si te insotim de la prima vizionare pana la semnarea actelor.
+            metCasa este o agentie imobiliara tanara, construita pe ideea ca o
+            casa nu se vinde doar cu o poza si un pret. Te ascult, verific
+            fiecare anunt si te insotesc de la prima vizionare pana la semnarea
+            actelor.
           </p>
           <p class="mt-4 text-lg leading-relaxed text-purple-800/80">
-            Lucram cu apartamente, case, terenuri si spatii comerciale in
-            Bucuresti si imprejurimi. Fiecare proprietate listata pe metCasa
-            trece printr-o verificare de baza inainte sa ajunga la tine.
+            Lucrez cu apartamente, case, terenuri si spatii comerciale in Iasi
+            si imprejurimi. Fiecare proprietate listata pe metCasa trece
+            printr-o verificare de baza inainte sa ajunga la tine.
           </p>
         </div>
 
@@ -119,10 +118,10 @@
           >
             <div class="text-3xl">📍</div>
             <h3 class="mt-4 text-lg font-semibold text-purple-900">
-              Cunoastem zona
+              Cunosc zona
             </h3>
             <p class="mt-2 text-sm text-purple-800/70">
-              Agentii nostri lucreaza local si stiu fiecare cartier.
+              Lucrez local si stiu fiecare cartier din Iasi.
             </p>
           </div>
         </div>
@@ -138,8 +137,8 @@
           Gata sa-ti gasesti urmatoarea casa?
         </h2>
         <p class="mx-auto mt-4 max-w-xl text-base text-white/70 md:text-lg">
-          Rasfoieste anunturile noastre actualizate sau lasa-ne un mesaj si te
-          contactam noi.
+          Rasfoieste anunturile actualizate sau lasa-mi un mesaj si te
+          contactez eu.
         </p>
         <UiButton to="/anunturi" variant="accent" size="lg" rounded="full" class="mt-8">
           Exploreaza anunturile

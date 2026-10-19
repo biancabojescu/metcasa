@@ -5,7 +5,8 @@
         <div>
           <h3 class="text-2xl font-semibold text-purple-900">metCasa</h3>
           <p class="mt-3 text-sm text-purple-800/80 leading-relaxed">
-            Agentia ta de incredere pentru tranzactii imobiliare. Gasim casa potrivita pentru tine.
+            Mediere, evaluare si tranzactii imobiliare in Iasi. Gasesc casa
+            potrivita pentru tine.
           </p>
         </div>
 
@@ -33,8 +34,15 @@
         <div>
           <h4 class="text-sm font-semibold uppercase tracking-wider text-purple-900">Contact</h4>
           <ul class="mt-3 space-y-2 text-sm text-purple-800/80">
-            <li>contact@metCasa.ro</li>
-            <li>+40 755 633 650</li>
+            <li>
+              <a
+                href="mailto:contact@metCasa.ro"
+                class="hover:text-purple-500"
+              >contact@metCasa.ro</a>
+            </li>
+            <li>
+              <a href="tel:+40755633650" class="hover:text-purple-500">+40 755 633 650</a>
+            </li>
             <li>Iași, România</li>
           </ul>
         </div>

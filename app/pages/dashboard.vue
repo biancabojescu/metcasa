@@ -35,7 +35,7 @@
       </UiCard>
       <UiCard padding="sm" class="p-5">
         <div class="text-xs font-semibold uppercase tracking-wider text-purple-800/60">
-          Valoare totala
+          Valoare totala vanzari
         </div>
         <div class="mt-2 text-3xl font-bold text-purple-900">
           {{ formatPrice(stats.totalValue) }}
@@ -43,6 +43,13 @@
         </div>
       </UiCard>
     </section>
+
+    <p v-if="globalError" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+      {{ globalError }}
+    </p>
+    <p v-if="globalSuccess" class="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+      {{ globalSuccess }}
+    </p>
 
     <!-- Layout: form + list -->
     <div class="grid grid-cols-1 gap-8 xl:grid-cols-[420px_1fr]">
@@ -71,19 +78,20 @@
 
           <UiInput
             v-model="form.location"
-            label="Locatie"
+            label="Adresa"
             required
-            placeholder="Bucuresti, Aviatiei"
+            placeholder="Iasi, Copou, str. Exemplu nr. 5"
+            hint="Adresa apare ca link Google Maps in detaliile anuntului."
           />
 
           <div class="grid grid-cols-2 gap-3">
             <UiSelect
-              v-model="form.dealType"
+              v-model="form.deal_type"
               label="Tip tranzactie"
               :options="DEAL_TYPE_OPTIONS"
             />
             <UiSelect
-              v-model="form.propertyType"
+              v-model="form.property_type"
               label="Tip proprietate"
               :options="PROPERTY_TYPE_OPTIONS"
             />
@@ -116,12 +124,45 @@
             />
             <UiInput
               v-model="form.price"
-              :label="`Pret (EUR${form.dealType === 'Inchiriere' ? '/luna' : ''})`"
+              :label="`Pret (EUR${form.deal_type === 'Inchiriere' ? '/luna' : ''})`"
               type="number"
               :min="0"
               required
               placeholder="145000"
             />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold uppercase tracking-wider text-purple-900">
+              Descriere (optional)
+            </label>
+            <textarea
+              v-model="form.description"
+              rows="3"
+              class="w-full rounded-lg border border-purple-900/15 bg-white px-3 py-2.5 text-sm text-purple-900 placeholder:text-purple-900/40 focus:border-purple-500 focus:outline-none"
+              placeholder="Detalii suplimentare..."
+            />
+          </div>
+
+          <UiSelect
+            v-model="form.status"
+            label="Status"
+            :options="STATUS_OPTIONS"
+          />
+
+          <div v-if="form.status === 'inactive'" class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold uppercase tracking-wider text-purple-900">
+              Detalii arhivare
+            </label>
+            <textarea
+              v-model="form.archive_note"
+              rows="3"
+              class="w-full rounded-lg border border-amber-300 bg-amber-50/40 px-3 py-2.5 text-sm text-purple-900 placeholder:text-purple-900/40 focus:border-amber-500 focus:outline-none"
+              placeholder="De ce arhivezi anuntul? (ex: vandut, retras la cererea proprietarului, in negociere)"
+            />
+            <p class="text-xs text-amber-800/80">
+              Anuntul nu va mai aparea in listari publice cat e inactiv.
+            </p>
           </div>
 
           <div class="flex flex-col gap-1.5">
@@ -142,7 +183,7 @@
             >
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 multiple
                 class="hidden"
                 @change="onFileInput"
@@ -158,13 +199,13 @@
 
             <p v-if="uploadError" class="text-xs text-red-600">{{ uploadError }}</p>
 
-            <div v-if="form.images.length > 0" class="mt-2 grid grid-cols-3 gap-2">
+            <div v-if="allFormImages.length > 0" class="mt-2 grid grid-cols-3 gap-2">
               <div
-                v-for="(img, idx) in form.images"
-                :key="idx"
+                v-for="(img, idx) in allFormImages"
+                :key="img.key"
                 class="group relative aspect-square overflow-hidden rounded-lg border border-purple-900/10"
               >
-                <img :src="img" alt="" class="h-full w-full object-cover" />
+                <img :src="img.preview" alt="" class="h-full w-full object-cover" />
                 <span
                   v-if="idx === 0"
                   class="absolute bottom-1 left-1 rounded-full bg-purple-900/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white"
@@ -175,7 +216,7 @@
                   type="button"
                   aria-label="Sterge imaginea"
                   class="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white/95 text-xs font-bold text-red-600 opacity-0 shadow transition-opacity group-hover:opacity-100"
-                  @click="removeImage(idx)"
+                  @click="removeImage(img)"
                 >
                   &times;
                 </button>
@@ -183,8 +224,12 @@
             </div>
           </div>
 
+          <p v-if="formError" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            {{ formError }}
+          </p>
+
           <div class="flex flex-col gap-2 pt-2">
-            <UiButton type="submit" block size="lg">
+            <UiButton type="submit" block size="lg" :loading="saving">
               {{ editingId !== null ? "Salveaza modificarile" : "Publica anuntul" }}
             </UiButton>
             <UiButton
@@ -208,10 +253,14 @@
       >
         <div class="flex items-center justify-between border-b border-purple-900/10 px-6 py-4">
           <h2 class="text-xl font-semibold text-purple-900">Anunturi existente</h2>
-          <span class="text-sm text-purple-800/60">{{ listings.length }} total</span>
+          <span class="text-sm text-purple-800/60">{{ stats.total }} total</span>
         </div>
 
-        <div v-if="listings.length === 0" class="px-6 py-16 text-center">
+        <div v-if="loadingList" class="px-6 py-16 text-center text-sm text-purple-800/60">
+          Se incarca...
+        </div>
+
+        <div v-else-if="listings.length === 0" class="px-6 py-16 text-center">
           <p class="text-sm text-purple-800/60">Nu exista anunturi inca.</p>
           <UiButton variant="ghost" size="sm" class="mt-3" @click="openCreateForm">
             Adauga primul anunt
@@ -222,19 +271,22 @@
           <article
             v-for="listing in listings"
             :key="listing.id"
-            class="flex flex-col gap-4 px-6 py-4 md:flex-row md:items-center"
+            :class="[
+              'flex flex-col gap-4 px-6 py-4 md:flex-row md:items-center',
+              listing.status === 'inactive' ? 'bg-amber-50/40' : '',
+            ]"
           >
             <div
               class="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl text-3xl"
-              :style="listing.images.length === 0 ? { background: listing.gradient } : undefined"
+              :style="listing.images.length === 0 ? { background: presetFor(listing.property_type).gradient } : undefined"
             >
               <img
                 v-if="listing.images.length > 0"
-                :src="listing.images[0]"
+                :src="listing.images[0]?.url"
                 :alt="listing.title"
                 class="h-full w-full object-cover"
               />
-              <template v-else>{{ listing.icon }}</template>
+              <template v-else>{{ presetFor(listing.property_type).icon }}</template>
               <span
                 v-if="listing.images.length > 1"
                 class="absolute bottom-0.5 right-0.5 rounded-full bg-purple-900/80 px-1.5 py-0.5 text-[9px] font-semibold text-white"
@@ -245,18 +297,38 @@
 
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <h3 class="truncate text-base font-semibold text-purple-900">
+                <h3
+                  :class="[
+                    'truncate text-base font-semibold',
+                    listing.status === 'inactive' ? 'text-purple-900/60 line-through' : 'text-purple-900',
+                  ]"
+                >
                   {{ listing.title }}
                 </h3>
                 <UiBadge
                   size="sm"
-                  :variant="listing.dealType === 'Vanzare' ? 'soft-green' : 'soft-purple'"
+                  :variant="listing.deal_type === 'Vanzare' ? 'soft-green' : 'soft-purple'"
                   class="shrink-0"
                 >
-                  {{ listing.dealType }}
+                  {{ listing.deal_type }}
+                </UiBadge>
+                <UiBadge
+                  v-if="listing.status === 'inactive'"
+                  size="sm"
+                  variant="purple"
+                  class="shrink-0 bg-amber-500 text-white"
+                >
+                  Arhivat
                 </UiBadge>
               </div>
               <p class="mt-0.5 text-sm text-purple-800/70">{{ listing.location }}</p>
+              <p
+                v-if="listing.status === 'inactive' && listing.archive_note"
+                class="mt-1 text-xs italic text-amber-800"
+                :title="listing.archive_note"
+              >
+                Arhivat: {{ listing.archive_note }}
+              </p>
               <div class="mt-1 flex flex-wrap gap-x-3 text-xs text-purple-800/60">
                 <span v-if="listing.rooms">{{ listing.rooms }} {{ listing.rooms === 1 ? "camera" : "camere" }}</span>
                 <span>{{ listing.surface }} mp</span>
@@ -270,7 +342,7 @@
                   {{ formatPrice(listing.price) }}
                 </div>
                 <div class="text-xs text-purple-800/60">
-                  EUR{{ listing.dealType === "Inchiriere" ? "/luna" : "" }}
+                  EUR{{ listing.deal_type === "Inchiriere" ? "/luna" : "" }}
                 </div>
               </div>
 
@@ -278,7 +350,12 @@
                 <UiButton variant="secondary" size="sm" @click="edit(listing)">
                   Editeaza
                 </UiButton>
-                <UiButton variant="danger" size="sm" @click="remove(listing.id)">
+                <UiButton
+                  variant="danger"
+                  size="sm"
+                  :loading="deletingId === listing.id"
+                  @click="remove(listing.id)"
+                >
                   Sterge
                 </UiButton>
               </div>
@@ -293,37 +370,8 @@
 <script setup lang="ts">
 definePageMeta({
   layout: "default",
+  middleware: "admin",
 })
-
-type DealType = "Vanzare" | "Inchiriere"
-type PropertyType = "Apartament" | "Casa" | "Teren" | "Comercial"
-
-interface Listing {
-  id: number
-  title: string
-  location: string
-  price: number
-  dealType: DealType
-  propertyType: PropertyType
-  rooms: number | null
-  surface: number
-  floor: string | null
-  icon: string
-  gradient: string
-  images: string[]
-}
-
-interface ListingForm {
-  title: string
-  location: string
-  dealType: DealType
-  propertyType: PropertyType
-  rooms: number | null
-  surface: number | null
-  floor: string
-  price: number | null
-  images: string[]
-}
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 
@@ -339,75 +387,113 @@ const PROPERTY_TYPE_OPTIONS: { value: PropertyType; label: string }[] = [
   { value: "Comercial", label: "Comercial" },
 ]
 
-const PROPERTY_PRESETS: Record<PropertyType, { icon: string; gradient: string }> = {
-  Apartament: { icon: "🏢", gradient: "linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)" },
-  Casa: { icon: "🏡", gradient: "linear-gradient(135deg, #00dc82 0%, #007f45 100%)" },
-  Teren: { icon: "🌳", gradient: "linear-gradient(135deg, #75edae 0%, #016538 100%)" },
-  Comercial: { icon: "🏬", gradient: "linear-gradient(135deg, #1F2937 0%, #6366F1 100%)" },
+const STATUS_OPTIONS: { value: ListingStatus; label: string }[] = [
+  { value: "active", label: "Activ (vizibil public)" },
+  { value: "inactive", label: "Inactiv / arhivat" },
+]
+
+interface ListingForm {
+  title: string
+  location: string
+  description: string
+  deal_type: DealType
+  property_type: PropertyType
+  rooms: number | null
+  surface: number | null
+  floor: string
+  price: number | null
+  status: ListingStatus
+  archive_note: string
 }
 
-const listings = ref<Listing[]>([
-  {
-    id: 1,
-    title: "Apartament 3 camere, decomandat",
-    location: "Bucuresti, Aviatiei",
-    price: 145000,
-    dealType: "Vanzare",
-    propertyType: "Apartament",
-    rooms: 3,
-    surface: 78,
-    floor: "4/8",
-    icon: "🏢",
-    gradient: "linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)",
-    images: [],
-  },
-  {
-    id: 2,
-    title: "Casa cu gradina, 4 camere",
-    location: "Bucuresti, Pipera",
-    price: 320000,
-    dealType: "Vanzare",
-    propertyType: "Casa",
-    rooms: 4,
-    surface: 180,
-    floor: null,
-    icon: "🏡",
-    gradient: "linear-gradient(135deg, #00dc82 0%, #007f45 100%)",
-    images: [],
-  },
-  {
-    id: 3,
-    title: "Garsoniera moderna, complet mobilata",
-    location: "Bucuresti, Universitate",
-    price: 450,
-    dealType: "Inchiriere",
-    propertyType: "Apartament",
-    rooms: 1,
-    surface: 36,
-    floor: "2/5",
-    icon: "🏢",
-    gradient: "linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)",
-    images: [],
-  },
-])
+interface FormImage {
+  key: string
+  preview: string
+  // pentru imaginile existente: path (de pastrat); pentru cele noi: file
+  existingPath?: string
+  file?: File
+}
 
 const defaultForm = (): ListingForm => ({
   title: "",
   location: "",
-  dealType: "Vanzare",
-  propertyType: "Apartament",
+  description: "",
+  deal_type: "Vanzare",
+  property_type: "Apartament",
   rooms: null,
   surface: null,
   floor: "",
   price: null,
-  images: [],
+  status: "active",
+  archive_note: "",
 })
 
+const api = useListings()
+
+const listings = ref<Listing[]>([])
+const loadingList = ref(false)
 const showForm = ref(true)
 const editingId = ref<number | null>(null)
 const isDragging = ref(false)
 const uploadError = ref("")
+const formError = ref("")
+const globalError = ref("")
+const globalSuccess = ref("")
+const saving = ref(false)
+const deletingId = ref<number | null>(null)
+
 const form = reactive<ListingForm>(defaultForm())
+const formImages = ref<FormImage[]>([])
+
+const allFormImages = computed(() => formImages.value)
+
+const hasNoRooms = computed(
+  () => form.property_type === "Teren" || form.property_type === "Comercial",
+)
+
+watch(hasNoRooms, (noRooms) => {
+  if (noRooms) form.rooms = null
+})
+
+const stats = computed(() => ({
+  total: listings.value.length,
+  sales: listings.value.filter((l) => l.deal_type === "Vanzare").length,
+  rentals: listings.value.filter((l) => l.deal_type === "Inchiriere").length,
+  totalValue: listings.value
+    .filter((l) => l.deal_type === "Vanzare")
+    .reduce((sum, l) => sum + l.price, 0),
+}))
+
+const loadListings = async () => {
+  loadingList.value = true
+  try {
+    const res = await api.fetchList({ per_page: 100, include_all_statuses: true, sort: "recent" })
+    listings.value = res.data
+  } catch (e) {
+    const err = e as { data?: { message?: string } }
+    globalError.value = err?.data?.message || "Nu am putut incarca anunturile."
+  } finally {
+    loadingList.value = false
+  }
+}
+
+const openCreateForm = () => {
+  editingId.value = null
+  uploadError.value = ""
+  formError.value = ""
+  Object.assign(form, defaultForm())
+  formImages.value = []
+  showForm.value = true
+}
+
+const closeForm = () => {
+  showForm.value = false
+  editingId.value = null
+  uploadError.value = ""
+  formError.value = ""
+  Object.assign(form, defaultForm())
+  formImages.value = []
+}
 
 const readFileAsDataUrl = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -420,8 +506,6 @@ const readFileAsDataUrl = (file: File): Promise<string> =>
 const addFiles = async (files: FileList | File[]) => {
   uploadError.value = ""
   const incoming = Array.from(files)
-  const valid: File[] = []
-
   for (const file of incoming) {
     if (!file.type.startsWith("image/")) {
       uploadError.value = `${file.name} nu este o imagine valida.`
@@ -431,11 +515,13 @@ const addFiles = async (files: FileList | File[]) => {
       uploadError.value = `${file.name} depaseste 5MB.`
       continue
     }
-    valid.push(file)
+    const preview = await readFileAsDataUrl(file)
+    formImages.value.push({
+      key: `${file.name}-${file.lastModified}-${formImages.value.length}`,
+      preview,
+      file,
+    })
   }
-
-  const dataUrls = await Promise.all(valid.map(readFileAsDataUrl))
-  form.images.push(...dataUrls)
 }
 
 const onFileInput = (event: Event) => {
@@ -449,93 +535,119 @@ const onDrop = (event: DragEvent) => {
   if (event.dataTransfer?.files) addFiles(event.dataTransfer.files)
 }
 
-const removeImage = (idx: number) => {
-  form.images.splice(idx, 1)
-}
-
-const hasNoRooms = computed(
-  () => form.propertyType === "Teren" || form.propertyType === "Comercial",
-)
-
-watch(hasNoRooms, (noRooms) => {
-  if (noRooms) form.rooms = null
-})
-
-const stats = computed(() => ({
-  total: listings.value.length,
-  sales: listings.value.filter((l) => l.dealType === "Vanzare").length,
-  rentals: listings.value.filter((l) => l.dealType === "Inchiriere").length,
-  totalValue: listings.value
-    .filter((l) => l.dealType === "Vanzare")
-    .reduce((sum, l) => sum + l.price, 0),
-}))
-
-const openCreateForm = () => {
-  editingId.value = null
-  uploadError.value = ""
-  Object.assign(form, defaultForm())
-  showForm.value = true
-}
-
-const closeForm = () => {
-  showForm.value = false
-  editingId.value = null
-  uploadError.value = ""
-  Object.assign(form, defaultForm())
+const removeImage = (img: FormImage) => {
+  formImages.value = formImages.value.filter((i) => i.key !== img.key)
 }
 
 const edit = (listing: Listing) => {
   editingId.value = listing.id
   uploadError.value = ""
+  formError.value = ""
   showForm.value = true
   Object.assign(form, {
     title: listing.title,
     location: listing.location,
-    dealType: listing.dealType,
-    propertyType: listing.propertyType,
+    description: listing.description ?? "",
+    deal_type: listing.deal_type,
+    property_type: listing.property_type,
     rooms: listing.rooms,
     surface: listing.surface,
     floor: listing.floor ?? "",
     price: listing.price,
-    images: [...listing.images],
+    status: listing.status,
+    archive_note: listing.archive_note ?? "",
   })
+  formImages.value = listing.images.map((img: ListingImage, idx: number) => ({
+    key: "existing-" + idx + "-" + img.path,
+    preview: img.url,
+    existingPath: img.path,
+  }))
 }
 
-const remove = (id: number) => {
-  if (!confirm("Sigur vrei sa stergi acest anunt?")) return
-  listings.value = listings.value.filter((l) => l.id !== id)
-  if (editingId.value === id) closeForm()
-}
+const buildFormData = (): FormData => {
+  const fd = new FormData()
+  fd.set("title", form.title)
+  fd.set("location", form.location)
+  fd.set("description", form.description ?? "")
+  fd.set("deal_type", form.deal_type)
+  fd.set("property_type", form.property_type)
+  fd.set("surface", String(form.surface ?? ""))
+  fd.set("price", String(form.price ?? ""))
+  fd.set("status", form.status)
+  if (form.status === "inactive" && form.archive_note) {
+    fd.set("archive_note", form.archive_note)
+  } else if (form.status === "active") {
+    // La revenire pe active stergem nota
+    fd.set("archive_note", "")
+  }
+  if (!hasNoRooms.value && form.rooms !== null) fd.set("rooms", String(form.rooms))
+  if (form.floor) fd.set("floor", form.floor)
 
-const submit = () => {
-  if (form.surface === null || form.price === null) return
-
-  const preset = PROPERTY_PRESETS[form.propertyType]
-  const payload: Omit<Listing, "id"> = {
-    title: form.title,
-    location: form.location,
-    dealType: form.dealType,
-    propertyType: form.propertyType,
-    rooms: hasNoRooms.value ? null : form.rooms,
-    surface: form.surface,
-    floor: form.floor.trim() || null,
-    price: form.price,
-    icon: preset.icon,
-    gradient: preset.gradient,
-    images: [...form.images],
+  for (const img of formImages.value) {
+    if (img.existingPath) fd.append("keep_images[]", img.existingPath)
+    else if (img.file) fd.append("new_images[]", img.file)
   }
 
   if (editingId.value !== null) {
-    const idx = listings.value.findIndex((l) => l.id === editingId.value)
-    if (idx !== -1) listings.value[idx] = { id: editingId.value, ...payload }
-  } else {
-    const nextId = listings.value.reduce((max, l) => Math.max(max, l.id), 0) + 1
-    listings.value.unshift({ id: nextId, ...payload })
+    fd.set("_method", "POST")
   }
 
-  closeForm()
+  return fd
+}
+
+const submit = async () => {
+  if (form.surface === null || form.price === null) {
+    formError.value = "Suprafata si pret sunt obligatorii."
+    return
+  }
+  formError.value = ""
+  globalError.value = ""
+  globalSuccess.value = ""
+  saving.value = true
+  try {
+    const fd = buildFormData()
+    let res
+    if (editingId.value !== null) {
+      res = await api.update(editingId.value, fd)
+    } else {
+      res = await api.create(fd)
+    }
+    globalSuccess.value = res.message
+    setTimeout(() => (globalSuccess.value = ""), 3500)
+    closeForm()
+    await loadListings()
+  } catch (e) {
+    const err = e as { data?: { message?: string; errors?: Record<string, string[]> } }
+    if (err?.data?.errors) {
+      formError.value = Object.values(err.data.errors).flat()[0] ?? "Eroare la salvare."
+    } else {
+      formError.value = err?.data?.message || "Eroare la salvare."
+    }
+  } finally {
+    saving.value = false
+  }
+}
+
+const remove = async (id: number) => {
+  if (!confirm("Sigur vrei sa stergi acest anunt?")) return
+  deletingId.value = id
+  globalError.value = ""
+  try {
+    const res = await api.remove(id)
+    globalSuccess.value = res.message
+    setTimeout(() => (globalSuccess.value = ""), 3500)
+    if (editingId.value === id) closeForm()
+    listings.value = listings.value.filter((l) => l.id !== id)
+  } catch (e) {
+    const err = e as { data?: { message?: string } }
+    globalError.value = err?.data?.message || "Eroare la stergere."
+  } finally {
+    deletingId.value = null
+  }
 }
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("ro-RO").format(price)
+
+onMounted(loadListings)
 </script>

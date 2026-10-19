@@ -4,6 +4,10 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-01-15",
   devtools: { enabled: true },
 
+  devServer: {
+    port: 3001,
+  },
+
   modules: [
     "@pinia/nuxt",
     "nuxt-icons",
@@ -18,16 +22,10 @@ export default defineNuxtConfig({
     },
   },
 
-  app: {
-    head: {
-      title: "metCasa",
-    },
-  },
-
   runtimeConfig: {
     public: {
       baseUrl: process.env.BASE_URL,
-      apiUrl: process.env.API_URL,
+      apiUrl: process.env.API_URL || "http://localhost:8000/api/v1",
       reverbAppKey: process.env.VITE_REVERB_APP_KEY,
       reverbHost: process.env.VITE_REVERB_HOST,
       reverbPort: process.env.VITE_REVERB_PORT,
@@ -40,9 +38,16 @@ export default defineNuxtConfig({
   ssr: false,
 
   imports: {
-    dirs: ["store/.ts", "types/**/.ts", "types/.ts", "composables/**/.ts"],
+    dirs: ["composables/**", "stores/**", "types/**"],
   },
   css: ["/assets/css/main.css"],
+
+  app: {
+    head: {
+      title: "metCasa",
+    },
+  },
+
   vite: {
     plugins: [tailwindcss()],
   },

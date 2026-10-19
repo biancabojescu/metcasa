@@ -1,8 +1,7 @@
-import { useAuthStore } from "~/stores/auth"
 
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware(async (to) => {
   const auth = useAuthStore()
-  auth.hydrate()
+  await auth.hydrate()
 
   if (!auth.isLoggedIn) {
     return navigateTo({
