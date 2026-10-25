@@ -1,6 +1,3 @@
-// Types din app/types/auth.ts (auto-imported)
-// Helpers din app/composables/useApi.ts (auto-imported)
-
 const AVATAR_COLORS = [
   "#4F46E5",
   "#6366F1",
@@ -111,7 +108,6 @@ export const useAuthStore = defineStore("auth", {
       try {
         if (this.token) await api("/auth/logout", { method: "POST" })
       } catch {
-        // ignore
       } finally {
         this.token = null
         this.user = null

@@ -1,5 +1,3 @@
-// Types & presets sunt in app/types/listing.ts (auto-imported)
-
 const cleanQuery = (q: Record<string, unknown>): Record<string, unknown> => {
   const out: Record<string, unknown> = {}
   for (const [k, v] of Object.entries(q)) {

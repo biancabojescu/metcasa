@@ -280,7 +280,6 @@ const save = async () => {
     })
     saved.value = res.message
     setTimeout(() => (saved.value = ""), 3000)
-    // Reset form deltas dupa salvare (folosind noile valori din store)
     Object.assign(form, baseline())
     localAvatarPreview.value = null
   } catch (e) {
@@ -308,7 +307,6 @@ const logout = async () => {
   router.push("/")
 }
 
-// Cand userul se schimba (initial fetch) sincronizam baseline-ul
 watch(
   () => auth.user?.id,
   () => {

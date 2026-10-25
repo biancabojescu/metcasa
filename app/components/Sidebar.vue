@@ -1,5 +1,4 @@
 <template>
-  <!-- Mobile overlay -->
   <div
     v-if="store.mobileOpen"
     class="fixed inset-0 z-30 bg-purple-900/50 backdrop-blur-sm md:hidden"
@@ -9,12 +8,10 @@
   <aside
     :class="[
       'flex flex-col gap-6 bg-grey-10 p-6 shadow-md',
-      // Mobile: drawer fixed sub header (z-40), overlay-ul are z-30, header z-50
       'max-md:fixed max-md:left-0 max-md:top-[5.5rem] max-md:bottom-0 max-md:z-40',
       'max-md:w-[85vw] max-md:max-w-sm max-md:overflow-y-auto',
       'max-md:transition-transform max-md:duration-300',
       store.mobileOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full',
-      // Desktop: stretch automat in flex row, plus min-h-full ca asigurare
       'md:w-90 md:min-h-full xl:w-90 2xl:w-110',
     ]"
   >
@@ -157,7 +154,6 @@ const reset = () => {
   store.reset()
 }
 
-// Blochez scroll-ul body cand drawer-ul e deschis pe mobile
 watchEffect(() => {
   if (!import.meta.client) return
   if (store.mobileOpen) {

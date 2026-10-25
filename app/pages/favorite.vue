@@ -166,7 +166,6 @@ const load = async () => {
 
 const onRemove = async (id: number) => {
   await favorites.remove(id)
-  // Daca era ultimul de pe pagina, intoarce-te o pagina
   if (listings.value.length === 1 && currentPage.value > 1) {
     currentPage.value -= 1
   } else {

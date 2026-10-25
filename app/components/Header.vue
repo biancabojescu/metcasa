@@ -180,12 +180,10 @@ const route = useRoute()
 
 const mobileMenuOpen = ref(false)
 
-// Inchide meniul cand se schimba ruta
 watch(() => route.fullPath, () => {
   mobileMenuOpen.value = false
 })
 
-// Inchide la Escape
 const onKey = (e: KeyboardEvent) => {
   if (e.key === "Escape") mobileMenuOpen.value = false
 }

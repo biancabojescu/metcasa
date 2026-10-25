@@ -1,5 +1,3 @@
-// SidebarFilters din app/types/listing.ts (auto-imported)
-
 const empty = (): SidebarFilters => ({
   location: "",
   dealType: null,
@@ -42,10 +40,6 @@ export const useListingFiltersStore = defineStore("listingFilters", {
       this.filters = empty()
       this.appliedAt = Date.now()
     },
-    /**
-     * Sincronizeaza state-ul din query-ul de URL.
-     * Folosit la load initial si la back/forward in browser.
-     */
     setFromQuery(q: Record<string, string | string[]>) {
       const str = (v: string | string[] | undefined) =>
         typeof v === "string" ? v : Array.isArray(v) ? v[0] : ""
@@ -66,10 +60,6 @@ export const useListingFiltersStore = defineStore("listingFilters", {
         surfaceMax: num(q.surface_max),
       }
     },
-    /**
-     * Construieste partea de query-string pe baza filtrelor curente
-     * (omite cheile cu valori falsy ca URL-ul sa fie curat).
-     */
     toQuery(): Record<string, string> {
       const f = this.filters
       const out: Record<string, string> = {}

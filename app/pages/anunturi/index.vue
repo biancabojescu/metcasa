@@ -209,9 +209,6 @@ const toggleFavorite = async (id: number) => {
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("ro-RO").format(price)
 
-// ---- Sincronizare cu URL-ul ----
-// Sursa de adevar e store-ul de filtre + sort/page locale.
-// Flag-ul `isSyncing` previne bucla infinita state→URL→state.
 let isSyncing = false
 
 const buildQuery = (): Record<string, string> => {
@@ -224,7 +221,6 @@ const buildQuery = (): Record<string, string> => {
 const pushQuery = () => {
   if (isSyncing) return
   const newQ = buildQuery()
-  // Diff vs route curent ca sa nu pusham duplicate
   const cur = route.query as Record<string, string>
   const sameKeys = Object.keys(newQ).length === Object.keys(cur).length
   const sameValues = sameKeys && Object.keys(newQ).every((k) => cur[k] === newQ[k])
@@ -240,27 +236,23 @@ const readFromQuery = () => {
   filtersStore.setFromQuery(route.query as Record<string, string>)
   sort.value = (route.query.sort as ListingFilters["sort"]) || "recent"
   currentPage.value = route.query.page ? Number(route.query.page) : 1
-  // Eliberam flag-ul dupa un tick ca watch-ul state→URL sa nu rasara
   nextTick(() => {
     isSyncing = false
   })
 }
 
-// State→URL: cand userul schimba sort/pagina
 watch([sort, currentPage], () => {
   pushQuery()
   load()
   if (import.meta.client) window.scrollTo({ top: 0, behavior: "smooth" })
 })
 
-// State→URL: cand userul aplica filtrele din Sidebar
 watch(() => filtersStore.appliedAt, () => {
   currentPage.value = 1
   pushQuery()
   load()
 })
 
-// URL→State: cand userul da back/forward in browser
 watch(() => route.query, () => {
   if (isSyncing) return
   readFromQuery()

@@ -4,10 +4,6 @@ const EXPIRES_KEY = "metCasa_auth_expires_at"
 
 const isClient = () => import.meta.client
 
-/**
- * Citeste tokenul curent. Daca a expirat (expires_at <= now), il sterge si returneaza null
- * astfel ca apelantul stie ca trebuie sa re-loghezeze.
- */
 export const getAuthToken = (): string | null => {
   if (!isClient()) return null
 

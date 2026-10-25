@@ -16,7 +16,6 @@ interface FavoriteMutationResponse {
 
 export const useFavoritesStore = defineStore("favorites", {
   state: () => ({
-    /** ID-urile tuturor favoritelor (active + inactive) pentru hidratarea inimii rosii */
     ids: [] as number[],
     hydrated: false,
     loading: false,
@@ -28,10 +27,6 @@ export const useFavoritesStore = defineStore("favorites", {
   },
 
   actions: {
-    /**
-     * Hidrateaza ID-urile favoritelor de la BE. Apelata dupa login si la boot.
-     * Pentru utilizatorii anonimi nu se cheama nimic - ramane gol.
-     */
     async hydrateForUser(userId: number | null) {
       if (userId === null) {
         this.ids = []
@@ -72,7 +67,6 @@ export const useFavoritesStore = defineStore("favorites", {
         })
         this.ids = res.ids
       } catch {
-        // ignoram, lasam UI-ul ca era
       }
     },
 
@@ -84,7 +78,6 @@ export const useFavoritesStore = defineStore("favorites", {
         })
         this.ids = res.ids
       } catch {
-        // ignore
       }
     },
 
@@ -96,7 +89,6 @@ export const useFavoritesStore = defineStore("favorites", {
         })
         this.ids = res.ids
       } catch {
-        // ignore
       }
     },
 

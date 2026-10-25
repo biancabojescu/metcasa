@@ -409,7 +409,6 @@ interface ListingForm {
 interface FormImage {
   key: string
   preview: string
-  // pentru imaginile existente: path (de pastrat); pentru cele noi: file
   existingPath?: string
   file?: File
 }
@@ -577,7 +576,6 @@ const buildFormData = (): FormData => {
   if (form.status === "inactive" && form.archive_note) {
     fd.set("archive_note", form.archive_note)
   } else if (form.status === "active") {
-    // La revenire pe active stergem nota
     fd.set("archive_note", "")
   }
   if (!hasNoRooms.value && form.rooms !== null) fd.set("rooms", String(form.rooms))
